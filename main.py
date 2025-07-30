@@ -15,7 +15,7 @@ app.add_middleware(
 )
 
 def ler_planilha_csv(caminho: str) -> List[dict]:
-    df = pd.read_csv(caminho, encoding="utf-8")  # ou "latin1" se tiver erro de acentuação
+    df = pd.read_csv(caminho, encoding="latin1")  # ou "latin1" se tiver erro de acentuação
     return df.to_dict(orient="records")
 
 @app.get("/")
