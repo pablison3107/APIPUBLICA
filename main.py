@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.encoders import jsonable_encoder
 from typing import List
 import pandas as pd
 import os
@@ -16,6 +17,7 @@ app.add_middleware(
 
 def ler_planilha_csv(caminho: str) -> List[dict]:
     df = pd.read_csv(caminho, encoding="latin1", sep=';', dtype={'COD. BARRAS': str})
+    df = df.where(pd.notnull(df), None)  # substitui NaN por None
     return df.to_dict(orient="records")
 
 @app.get("/")
@@ -29,7 +31,8 @@ def get_dados():
         return {"erro": f"Arquivo não encontrado em: {caminho}"}
     try:
         dados = ler_planilha_csv(caminho)
-        return dados
+        return jsonable_encoder(dados)
     except Exception as e:
         return {"erro": str(e)}
+
 
