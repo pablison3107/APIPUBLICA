@@ -8,14 +8,14 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # ajuste depois
+    allow_origins=["*"],  # ajuste para seu domínio depois
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 def ler_planilha_csv(caminho: str) -> List[dict]:
-    df = pd.read_csv(caminho, encoding="latin1")  # ou "latin1" se tiver erro de acentuação
+    df = pd.read_csv(caminho, encoding="latin1", sep=';', dtype={'COD. BARRAS': str})
     return df.to_dict(orient="records")
 
 @app.get("/")
@@ -32,3 +32,4 @@ def get_dados():
         return dados
     except Exception as e:
         return {"erro": str(e)}
+
