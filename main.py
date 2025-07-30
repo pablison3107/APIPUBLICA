@@ -1,40 +1,34 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from openpyxl import load_workbook
 from typing import List
+import pandas as pd
 import os
 
 app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # ajuste para seu domínio depois
+    allow_origins=["*"],  # ajuste depois
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-def ler_planilha_excel(caminho: str) -> List[dict]:
-    wb = load_workbook(caminho)
-    ws = wb.active
-    cabecalho = [cell.value for cell in ws[1]]
-    dados = []
-
-    for row in ws.iter_rows(min_row=2, values_only=True):
-        item = {chave: valor for chave, valor in zip(cabecalho, row)}
-        dados.append(item)
-
-    return dados
+def ler_planilha_csv(caminho: str) -> List[dict]:
+    df = pd.read_csv(caminho, encoding="utf-8")  # ou "latin1" se tiver erro de acentuação
+    return df.to_dict(orient="records")
 
 @app.get("/")
 def root():
-    return {"mensagem": "API da planilha está rodando!"}
+    return {"mensagem": "API da planilha CSV está rodando!"}
 
 @app.get("/api/dados")
 def get_dados():
-    caminho = os.path.join(os.getcwd(), "planilha.xlsx")
+    caminho = os.path.abspath("planilha.csv")
+    if not os.path.exists(caminho):
+        return {"erro": f"Arquivo não encontrado em: {caminho}"}
     try:
-        dados = ler_planilha_excel(caminho)
+        dados = ler_planilha_csv(caminho)
         return dados
     except Exception as e:
         return {"erro": str(e)}
